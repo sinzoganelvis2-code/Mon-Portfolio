@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contacter Sèdégbé Elvis pour parler d'un projet ou d'une collaboration.">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <title>Contact | Elvis</title>
+</head>
+<body>
+
+    <header class="en-tete-site">
+        <a class="logo" href="index.html">Elvis<span>.</span></a>
+                <input class="case-menu" type="checkbox" id="menu-toggle" aria-label="Ouvrir le menu">
+                <label class="bouton-menu" for="menu-toggle" aria-label="Afficher la navigation">
+                    <span></span><span></span><span></span>
+                </label>
+        <nav aria-label="Navigation principale">
+          <a href="index.html">Accueil</a>
+          <a href="A-propos.html">À propos</a>
+          <a href="Projets.html">Projets</a>
+          <a class="actif" href="Contact.html">Contact</a>
+        </nav>
+    </header>
+
+    <main class="conteneur-section contenu-page page-contact">
+        <p class="surtitre">Parlons de ton idée</p>
+        <h1>Contactez-moi</h1>
+        <p class="introduction-contact">Une question, une collaboration ou simplement envie d'échanger ? Tu peux me joindre directement.</p>
+        <div class="grille-contact">
+            <a class="methode-contact" href="mailto:sinzoganelvis2@gmail.com"><span>Email</span><strong>sinzoganelvis2@gmail.com</strong></a>
+            <a class="methode-contact" href="tel:0142293653"><span>Téléphone</span><strong>01 42 29 36 53</strong></a>
+            <a class="methode-contact" href="https://wa.me/2290141816286" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>Écrire un message ↗</strong></a>
+        </div>
+
+        <form id="formulaire-contact" class="formulaire-contact" action="https://formspree.io/f/mjykrpgv" method="POST">
+            <div class="entete-formulaire">
+                <p class="surtitre">Message direct</p>
+                <h2>Écris-moi</h2>
+            </div>
+            <label for="user_name">Nom</label>
+            <input type="text" id="user_name" name="user_name" autocomplete="name" required>
+
+            <label for="user_email">Adresse email</label>
+            <input type="email" id="user_email" name="user_email" autocomplete="email" required>
+
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" required></textarea>
+
+            <button class="bouton" type="submit">Envoyer le message</button>
+            <p id="statut-formulaire" class="statut-formulaire" role="status" aria-live="polite"></p>
+        </form>
+    </main>
+    <footer class="pied-site"><p>&copy; 2026 — SINZOGAN Elvis</p><a href="mailto:sinzoganelvis2@gmail.com">sinzoganelvis2@gmail.com</a></footer>
+
+    <script>
+        emailjs.init({ publicKey: 'YS9tGatiWlLIHmHek' });
+
+        const contactForm = document.querySelector('#formulaire-contact');
+        const formStatus = document.querySelector('#statut-formulaire');
+        const submitButton = contactForm.querySelector('button[type="submit"]');
+
+        contactForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Envoi en cours...';
+            formStatus.textContent = '';
+            formStatus.className = 'statut-formulaire';
+
+            let formspreeSent = false;
+
+            try {
+                const formResponse = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: new FormData(contactForm),
+                    headers: { Accept: 'application/json' }
+                });
+
+                if (!formResponse.ok) {
+                    const formError = await formResponse.json().catch(() => ({}));
+                    throw new Error(formError.error || 'Formspree n’a pas accepté le message.');
+                }
+
+                formspreeSent = true;
+            } catch (error) {
+                formStatus.textContent = window.location.protocol === 'file:'
+                    ? 'Ouvre cette page avec Live Server pour permettre la connexion à Formspree.'
+                    : `Formspree : ${error.message}`;
+                formStatus.classList.add('erreur');
+                return;
+            }
+
+            try {
+                const templateParams = {
+                    user_name: contactForm.elements.user_name.value,
+                    user_email: contactForm.elements.user_email.value,
+                    message: contactForm.elements.message.value
+                };
+
+                await emailjs.send('service_c2oe50b', 'template_vaydwf6', templateParams);
+                contactForm.reset();
+                formStatus.textContent = 'Message envoyé. Un accusé de réception vient de partir par email.';
+                formStatus.classList.add('succes');
+            } catch (error) {
+                console.error('Erreur EmailJS :', error);
+                formStatus.textContent = formspreeSent
+                    ? `Message reçu, mais EmailJS a refusé la réponse : ${error.text || error.message || 'configuration à vérifier'}`
+                    : 'L’envoi a échoué. Tu peux me contacter directement par email.';
+                formStatus.classList.add('erreur');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Envoyer le message';
+            }
+        });
+    </script>
+ 
+</body>
+</html>
